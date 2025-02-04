@@ -14,8 +14,8 @@ public class QTestExecution {
     // Update these accordingly
     private static final String QTEST_BASE_URL     = "https://YOUR_QTEST_DOMAIN/api/v3";
     private static final String AUTH_HEADER_VALUE  = "Bearer <YOUR_BEARER_TOKEN>";
-    private static final long   PROJECT_ID         = 12345;  // e.g. 118109
-    private static final long   TEST_RUN_ID        = 67890;  // The test run you’re updating
+    private static final long   PROJECT_ID         = 118109;  // e.g. 118109
+    private static final long   TEST_RUN_ID        = 21009876;  // The test run you’re updating
 
     // Optional: disable SSL certificate checking if needed
     public static void setDisableSSLVerification(boolean disable) {

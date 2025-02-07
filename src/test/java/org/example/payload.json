@@ -1,0 +1,32 @@
+{
+  "test_cycle": "21080378",
+  "test_logs": [
+    {
+      "status": "PLACEHOLDER_STATUS",
+      "exe_start_date": "PLACEHOLDER_START",
+      "exe_end_date": "PLACEHOLDER_END",
+      "note": "Expected value: $17,266,097.58\nValue in file: $17,266,097.58",
+      "module_names": [
+        "GetPaid Test Execution"
+      ],
+      "name": "PLACEHOLDER_NAME",
+      "automation_content": "reconciliation.SAPCommission.Agility.AgilityCommissionReconciliationTests:ValidateRetailTotalCount",
+      "test_step_logs": [
+        {
+          "description": "Validate difference retail total values.",
+          "expected_result": "$17,266,097.58",
+          "actual_result": "$17,266,097.58",
+          "status": "FAIL",
+          "order": 1
+        },
+        {
+          "description": "Verify Objects are equal",
+          "expected_result": "47266968",
+          "actual_result": "47266990",
+          "status": "FAIL",
+          "order": 2
+        }
+      ]
+    }
+  ]
+}

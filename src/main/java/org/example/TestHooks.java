@@ -1,35 +1,27 @@
 package org.example;
 
 import io.cucumber.java.After;
-import io.cucumber.java.AfterAll;
 import io.cucumber.java.Scenario;
+import io.cucumber.plugin.EventListener;
+import io.cucumber.plugin.event.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TestHooks {
+public class TestHooks implements EventListener {
     
-    private static List<ScenarioData> allScenarioData = new ArrayList<>();
+    // Store Scenario objects directly
+    private static List<Scenario> allScenarios = new ArrayList<>();
     
     @After
     public void afterScenario(Scenario scenario) {
-        ScenarioData data = new ScenarioData();
-        data.setName(scenario.getName());
-        data.setStatus(scenario.getStatus().toString());
-        data.setTagNames(scenario.getSourceTagNames());
-        
-        // Extract feature file name from the scenario ID
-        String featureFileName = extractFeatureFileName(scenario.getId());
-        data.setFeatureFileName(featureFileName);
-        
-        allScenarioData.add(data);
+        // Store the scenario directly
+        allScenarios.add(scenario);
     }
     
     // Helper method to extract feature file name from scenario ID
     private String extractFeatureFileName(String scenarioId) {
-        // Scenario ID format is typically: "file:path/to/featurefile.feature:lineNumber"
         Pattern pattern = Pattern.compile(".*?([^/]+\\.feature)");
         Matcher matcher = pattern.matcher(scenarioId);
         if (matcher.find()) {
@@ -38,35 +30,29 @@ public class TestHooks {
         return "Unknown feature file";
     }
     
-    @AfterAll
-    public static void afterAllScenarios() {
-        System.out.println("Total Scenarios Run: " + allScenarioData.size());
-        
-        for (ScenarioData data : allScenarioData) {
-            System.out.println("Feature File: " + data.getFeatureFileName());
-            System.out.println("Scenario: " + data.getName());
-            System.out.println("Status: " + data.getStatus());
-            System.out.println("Tags: " + String.join(", ", data.getTagNames()));
-            System.out.println("------------------------");
-        }
+    // This will be called when all tests are finished
+    @Override
+    public void setEventPublisher(EventPublisher publisher) {
+        publisher.registerHandlerFor(TestRunFinished.class, event -> {
+            processAllScenarios();
+        });
     }
     
-    static class ScenarioData {
-        private String name;
-        private String status;
-        private Collection<String> tagNames;
-        private String featureFileName;
+    private void processAllScenarios() {
+        System.out.println("Total Scenarios Run: " + allScenarios.size());
         
-        // Original getters and setters
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-        public Collection<String> getTagNames() { return tagNames; }
-        public void setTagNames(Collection<String> tagNames) { this.tagNames = tagNames; }
-        
-        // New getter and setter for feature file name
-        public String getFeatureFileName() { return featureFileName; }
-        public void setFeatureFileName(String featureFileName) { this.featureFileName = featureFileName; }
+        for (Scenario scenario : allScenarios) {
+            String featureFileName = extractFeatureFileName(scenario.getId());
+            System.out.println("Feature File: " + featureFileName);
+            System.out.println("Scenario: " + scenario.getName());
+            System.out.println("Status: " + scenario.getStatus());
+
+            
+            // You can access embeds, step info, etc. directly from the scenario object
+            System.out.println("Has failed: " + scenario.isFailed());
+            
+            System.out.println("------------------------");
+        }
+
     }
 }

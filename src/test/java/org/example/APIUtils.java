@@ -1,5 +1,6 @@
 package org.example;
 
+import io.cucumber.java.Scenario;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -11,10 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
+
 
 public class APIUtils {
 
-  public static String buildPayload(String testCaseName,String status,String notes){
+  public static String buildPayload(Map<String, List<Scenario>> scenariosByFeature){
       JSONObject payloadJson=null;
       try{
           String content = new String(Files.readAllBytes(Paths.get(APIConstants.PAYLOAD_FILE_PATH)), StandardCharsets.UTF_8);
@@ -22,18 +25,47 @@ public class APIUtils {
           // Parse the content into a JSONObject
            payloadJson = new JSONObject(content);
 
-          String currentTime = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+       //   String currentTime = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
           JSONArray testLogs = payloadJson.getJSONArray("test_logs");
-          if (testLogs.length() > 0) {
-              JSONObject testLog = testLogs.getJSONObject(0);
-              testLog.put("name", testCaseName);
-              testLog.put("status", status);
-             // testLog.put("exe_start_date", currentTime);
-              //testLog.put("exe_end_date", currentTime);
-              testLog.put("note", "Test '" + testCaseName + "' executed with status: " + status);
-          }
 
+
+
+          // Process each feature file with its scenarios
+          for (Map.Entry<String, List<Scenario>> entry : scenariosByFeature.entrySet()) {
+              String featureFile = entry.getKey();
+              List<Scenario> scenarios = entry.getValue();
+
+              for (Scenario scenario : scenarios) {
+                  JSONObject tsLObj=new JSONObject(testLogs.getJSONObject(0));
+
+                  tsLObj.put("name", scenario.getName());
+
+                  if(scenario.getStatus().toString().toLowerCase().contains("pass")){
+                      tsLObj.put("status", "PASS");
+                     JSONArray jsonArray= tsLObj.getJSONArray("module_names");
+                     jsonArray.clear();
+                     jsonArray.put(featureFile);
+                     JSONArray jsonArray1=tsLObj.getJSONArray("test_step_logs");
+                     JSONObject test_step_logs=jsonArray1.getJSONObject(0);
+
+                      test_step_logs.put("expected_result", "Source to Target should match");
+                      test_step_logs.put("actual_result", "Source to Target is matching");
+                  } else {
+                      tsLObj.put("status", "FAIL");
+                      JSONArray jsonArray= tsLObj.getJSONArray("module_names");
+                      jsonArray.clear();
+                      jsonArray.put(featureFile);
+                      JSONArray jsonArray1=tsLObj.getJSONArray("test_step_logs");
+                      JSONObject test_step_logs=jsonArray1.getJSONObject(0);
+                      test_step_logs.put("expected_result", "Source to Target should match");
+                      test_step_logs.put("actual_result", "Source to Target is Not matching");
+                  }
+
+                  tsLObj.put("note", "Test '" + scenario.getName() + "' executed with status: " + scenario.getStatus());
+                  testLogs.put(tsLObj);
+                  }
+              }
       }catch (Exception e){
      e.printStackTrace();
       }

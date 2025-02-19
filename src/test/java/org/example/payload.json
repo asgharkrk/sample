@@ -18,13 +18,6 @@
           "actual_result": "$17,266,097.58",
           "status": "FAIL",
           "order": 1
-        },
-        {
-          "description": "Verify Objects are equal",
-          "expected_result": "47266968",
-          "actual_result": "47266990",
-          "status": "FAIL",
-          "order": 2
         }
       ]
     }
